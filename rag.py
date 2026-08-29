@@ -19,7 +19,7 @@ def create_embedding(text):
     return response["embedding"]
 
 
-question = "Can I work remotely from another country?"
+question = input("Ask a question: ")
 
 question_embedding = create_embedding(question)
 
@@ -28,4 +28,31 @@ results = collection.query(
     n_results=1
 )
 
-print(results["documents"][0][0])
+context = results["documents"][0][0]
+
+prompt = f"""
+You are an internal company assistant.
+
+Answer the user's question using only the information provided in the context.
+
+If the answer is not contained in the context, say that you do not have enough information.
+
+Context:
+{context}
+
+Question:
+{question}
+"""
+
+response = ollama.chat(
+    model="qwen2.5:7b",
+    messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
+)
+
+print("\nAnswer:")
+print(response["message"]["content"])
