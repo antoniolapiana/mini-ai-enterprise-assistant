@@ -66,78 +66,83 @@ Question:
     return response["message"]["content"].strip()
 
 
-question = input("Ask a question: ")
+def main():
 
-route = route_question(question)
+    question = input("Ask a question: ")
 
-print(f"Route: {route}")
+    route = route_question(question)
 
-
-if route == "RAG":
-
-    question_embedding = create_embedding(question)
-
-    results = collection.query(
-        query_embeddings=[question_embedding],
-        n_results=1
-    )
-
-    context = results["documents"][0][0]
-
-    prompt = f"""
-You are an internal company assistant.
-
-Answer the user's question using the context provided.
-
-If the answer is not contained in the context, say that you do not have enough information.
-
-Context:
-{context}
-
-Question:
-{question}
-"""
-
-    response = ollama.chat(
-        model="qwen2.5:7b",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
-
-    print("\nAnswer:")
-    print(response["message"]["content"])
+    print(f"Route: {route}")
 
 
-elif route == "TOOL":
+    if route == "RAG":
 
-    tool_result = get_company_info()
+        question_embedding = create_embedding(question)
 
-    response = ollama.chat(
-        model="qwen2.5:7b",
-        messages=[
-            {
-                "role": "user",
-                "content": f"""
-Answer the user's question using the tool result.
+        results = collection.query(
+            query_embeddings=[question_embedding],
+            n_results=1
+        )
 
-Tool result:
-{tool_result}
+        context = results["documents"][0][0]
 
-Question:
-{question}
-"""
-            }
-        ]
-    )
+        prompt = f"""
+    You are an internal company assistant.
 
-    print("\nAnswer:")
-    print(response["message"]["content"])
+    Answer the user's question using the context provided.
+
+    If the answer is not contained in the context, say that you do not have enough information.
+
+    Context:
+    {context}
+
+    Question:
+    {question}
+    """
+
+        response = ollama.chat(
+            model="qwen2.5:7b",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+
+        print("\nAnswer:")
+        print(response["message"]["content"])
 
 
-else:
+    elif route == "TOOL":
 
-    print("\nUnknown route.")
+        tool_result = get_company_info()
+
+        response = ollama.chat(
+            model="qwen2.5:7b",
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"""
+    Answer the user's question using the tool result.
+
+    Tool result:
+    {tool_result}
+
+    Question:
+    {question}
+    """
+                }
+            ]
+        )
+
+        print("\nAnswer:")
+        print(response["message"]["content"])
+
+
+    else:
+
+        print("\nUnknown route.")
+
+if __name__ == "__main__":
+    main()
