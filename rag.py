@@ -116,8 +116,26 @@ elif route == "TOOL":
 
     tool_result = get_company_info()
 
-    print("\nTool result:")
-    print(tool_result)
+    response = ollama.chat(
+        model="qwen2.5:7b",
+        messages=[
+            {
+                "role": "user",
+                "content": f"""
+Answer the user's question using the tool result.
+
+Tool result:
+{tool_result}
+
+Question:
+{question}
+"""
+            }
+        ]
+    )
+
+    print("\nAnswer:")
+    print(response["message"]["content"])
 
 
 else:
